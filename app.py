@@ -2,9 +2,7 @@ from flask import Flask, request, Blueprint
 import mysql.connector as mysql
 from services.patientServices import *
 from services.medicineServices import *
-
-# from flask_sqlalchemy import SQLAlchemy
-# from sqlalchemy.sql import func
+from services.ecgServices import *
 
 api_bp = Blueprint("api", __name__, url_prefix="/api/")
 
@@ -57,6 +55,24 @@ def get_all_medicine(patientId):
 @api_bp.route('/patient/<patientId>/medicine/<medicineId>', methods=['DELETE'])
 def remove_medicine(patientId,medicineId):
     return delete_medicine(medicineId,cnx)
+
+@api_bp.route('publisher/ecg',methods=['post'])
+def insert_ecg_data():
+    return insert_ecg(request.get_json(),cnx)
+
+# Adapted, previously get
+@api_bp.route('/ecg/graph', methods=['post'])
+def get_ecg_data_in_range():
+    return get_ecg_list_by_patient_id_in_range(request.get_json(),cnx)
+
+@api_bp.route('/ecg/histories/<userId>', methods=['get'])
+def get_history(userId):
+    return get_histories(userId,cnx)
+
+# predict
+@api_bp.route('/predict', methods=['post'])
+def get_predictions():
+    return make_predictions(request.get_json(),cnx)
 
 if __name__ == '__main__':
     app = Flask(__name__)

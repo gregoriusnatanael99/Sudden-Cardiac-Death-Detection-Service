@@ -1,7 +1,7 @@
 from misc.utils import *
 import bcrypt 
 from pypika import Query, Table
-import json
+from flask import jsonify
 
 def register_patient_data(curr_data,cnx,key_list = ["email","password"]):
     try:
@@ -32,7 +32,7 @@ def register_patient_data(curr_data,cnx,key_list = ["email","password"]):
         resp_dict['token'] = generate_token(secret_key, resp_dict)
         
         cursor.close()
-        return json.dumps(resp_dict)
+        return jsonify(resp_dict)
     
 def update_patient_data(curr_data,cnx,key_list=[]):
     try:
@@ -66,7 +66,7 @@ def update_patient_data(curr_data,cnx,key_list=[]):
             cursor.close()
             if "pin" in key_list:
                 return {'status':True}
-            return json.dumps(resp_dict)
+            return jsonify(resp_dict)
 
 def validate_pin(curr_data,cnx,key_list=['id','pin']):
     try:
@@ -94,18 +94,29 @@ def login_patient(curr_data,cnx,key_list=['email','password']):
         return "Key Error!"
     if status: 
         tgt_tab = Table('patients')
-        q = Query.from_(tgt_tab).select('email','password').where(tgt_tab["email"] == curr_data['email'])
+        q = Query.from_(tgt_tab).select('email','password','patientID','gender','cholesterolLevel','isSmoker','isHavingHypertension').where(tgt_tab["email"] == curr_data['email'])
         cursor = cnx.cursor(buffered=True)
         cursor.execute(str(q).replace('"','`'))
         row = cursor.fetchone()
+        print(row)
         cursor.close()
          
         curr_data['password'] = curr_data['password'].encode('utf-8') 
         salt = bcrypt.gensalt() 
         try:
             if bcrypt.checkpw(curr_data['password'],row[1].encode('utf-8')):
-                return {'status':True}
+                # return {status:True}
+                resp_dict = {}
+        
+                resp_dict["email"] = curr_data["email"]
+                new_keys = ['patientID','gender','cholesterolLevel','isSmoker','isHavingHypertension']
+                resp_dict['id'] = row[2]
+
+                for i in range(3,len(new_keys)+2):
+                    resp_dict[new_keys[i-2]] = row[i]
+
+                secret_key = 'dvf3-342-3-402-5'
+                resp_dict['token'] = generate_token(secret_key, resp_dict)       
         except:
             return {'status':False}
-        return {'status':False}
-    
+        return jsonify(resp_dict)

@@ -1,5 +1,5 @@
 from pypika import Query, Table,Criterion
-import json
+from flask import jsonify
 from misc.utils import *
 
 def insert_medicine(curr_data,cnx,key_list=['patientId','image','name','frequency','time','additionalInfo']):
@@ -20,7 +20,7 @@ def insert_medicine(curr_data,cnx,key_list=['patientId','image','name','frequenc
         for i in key_list:
             resp_dict[i] = curr_data[i]
         cursor.close()
-        return json.dumps(resp_dict)
+        return jsonify(resp_dict)
 
 def get_medicine(patientId,medId,cnx,key_list=['medicineId','patientId','image','name','frequency','time','additionalInfo']):
     tgt_tab = Table('medicines')
@@ -39,7 +39,7 @@ def get_medicine(patientId,medId,cnx,key_list=['medicineId','patientId','image',
     for i in range(len(key_list)):
         resp_dict[key_list[i]] = row[i]
     cursor.close()
-    return json.dumps(resp_dict)
+    return jsonify(resp_dict)
 
 def get_all_medicines(patientId,cnx,key_list=['medicineId','patientId','image','name','frequency','time','additionalInfo']):
     tgt_tab = Table('medicines')

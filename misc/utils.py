@@ -1,5 +1,6 @@
 import jwt
 from pypika import Query, Table
+from datetime import datetime
 
 def validate_dict(curr_dict,key_list):
     data_list = []
@@ -25,5 +26,8 @@ def get_user_by_id(id,cnx):
 def map_dict(keys,value_list):
     new_dict = {}
     for i in range(len(keys)):
-        new_dict[keys[i]]=value_list[i]
+        if isinstance(value_list[i],datetime):
+            new_dict[keys[i]]=value_list[i].strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            new_dict[keys[i]]=value_list[i]
     return new_dict
